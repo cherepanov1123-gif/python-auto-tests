@@ -1,64 +1,54 @@
+import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.edge.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
-def test_form():
-    options = Options()
-    options.add_argument("--start-maximized")
-    driver = webdriver.Edge(options=options)
+@pytest.fixture
+def browser():
+    driver = webdriver.Edge()
+    yield driver
+    driver.quit()
 
-    try:
-        driver.get(
-            "https://bonigarcia.dev/selenium-webdriver-java/data-types.html"
-        )
 
-        fields = {
-            "first-name": ("id", "Иван"),
-            "last-name": ("id", "Петров"),
-            "address": ("id", "Ленина, 55-3"),
-            "e-mail": ("id", "test@skypro.com"),
-            "phone": ("id", "+7985899998787"),
-            "zip-code": ("id", ""),
-            "city": ("id", "Москва"),
-            "country": ("id", "Россия"),
-            "job-position": ("id", "QA"),
-            "company": ("id", "SkyPro")
-        }
+def test_form_validation(browser):
+    browser.get(
+        "https://bonigarcia.dev/selenium-webdriver-java/data-types.html"
+    )
 
-        for field_id, (locator_type, value) in fields.items():
-            try:
-                field = driver.find_element(By.ID, field_id)
-            except Exception:
-                try:
-                    field = driver.find_element(By.NAME, field_id)
-                except Exception:
-                    field = driver.find_element(
-                        By.XPATH, f"//input[@id='{field_id}']"
-                    )
-            field.clear()
-            if value:
-                field.send_keys(value)
+    fields = {
+        "first-name": "Иван",
+        "last-name": "Петров",
+        "address": "Ленина, 55-3",
+        "e-mail": "test@skypro.com",
+        "phone": "+7985899998787",
+        "city": "Москва",
+        "country": "Россия",
+        "job-position": "QA",
+        "company": "SkyPro"
+    }
 
-        submit_btn = driver.find_element(By.XPATH, "//button[@type='submit']")
-        submit_btn.click()
 
-        zip_field = driver.find_element(By.ID, "zip-code")
-        zip_class = zip_field.get_attribute("class")
-        assert (
-            "alert-danger" in zip_class or "error" in zip_class
-        ), f"Zip code не подсвечен красным. Класс: {zip_class}"
+    for field_name, value in fields.items():
+        browser.find_element(By.NAME, field_name).send_keys(value)
 
-        green_fields = [
-            "first-name", "last-name", "address", "e-mail", "phone",
-            "city", "country", "job-position", "company"
-        ]
-        for field_id in green_fields:
-            field = driver.find_element(By.ID, field_id)
-            field_class = field.get_attribute("class")
-            assert (
-                "alert-success" in field_class or "success" in field_class
-            ), f"Поле {field_id} не подсвечено зеленым. Класс: {field_class}"
 
-    finally:
-        driver.quit()
+    browser.find_element(
+        By.CSS_SELECTOR, "button[type='submit']"
+    ).click()
+
+
+    zip_code = WebDriverWait(browser, 10).until(
+        EC.visibility_of_element_located((By.ID, "zip-code"))
+    )
+    assert "danger" in zip_code.get_attribute("class")
+
+
+    valid_fields = [
+        "first-name", "last-name", "address", "e-mail",
+        "phone", "city", "country", "job-position", "company"
+    ]
+    for field_id in valid_fields:
+        field = browser.find_element(By.ID, field_id)
+        assert "success" in field.get_attribute("class")
