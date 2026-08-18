@@ -55,6 +55,7 @@ def test_calculator_flow(driver, num1: str, operation: str, num2: str,
 
     with allure.step("Открыть страницу и настроить калькулятор"):
         main_page.open()
+        # Вводим задержку 45 в поле #delay на странице (НЕ time.sleep)
         main_page.set_calculator_delay(str(delay))
 
     with allure.step(f"Выполнить операцию: {num1} {operation} {num2}"):
@@ -64,6 +65,7 @@ def test_calculator_flow(driver, num1: str, operation: str, num2: str,
         main_page.click_button("=")
 
     with allure.step("Проверить результат"):
+        # Ожидание результата через WebDriverWait (НЕ time.sleep)
         main_page.wait_for_result(expected_result)
         result = main_page.get_result()
         assert result == expected_result, (
