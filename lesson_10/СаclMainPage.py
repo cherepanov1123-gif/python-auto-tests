@@ -33,10 +33,10 @@ class CalculatorPage:
         self.driver.get(base_url + "slow-calculator.html")
         return self
 
-    @allure.step("Установить задержку {seconds} секунд")
-    def set_delay(self, seconds: str):
+    @allure.step("Установить задержку калькулятора {seconds} секунд")
+    def set_calculator_delay(self, seconds: str):
         """
-        Устанавливает задержку в поле ввода #delay.
+        Устанавливает задержку калькулятора в поле ввода #delay.
 
         :param seconds: str — значение задержки в секундах.
         :return: self — возвращает текущий объект для цепочки вызовов.
